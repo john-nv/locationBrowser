@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+        integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <title>Chấm công</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="mt-2 mb-2">Chấm công</h1>
+        <input type="text" class="form-control username" placeholder="Nhập tên">
+
+        <button onclick="check()" class="btn btn-success mt-2 mb-2">Xác nhận</button>
+
+        <textarea class="form-control" id="info" style="height: 500px;" disabled></textarea>
+
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
+
+<script>
+   
+    function check() {
+        var unixTime = Math.floor(Date.now() / 1000);
+        console.log(unixTime);
+
+        var threshold = 1718299808;
+        if (unixTime > threshold) {
+            alert("Không thể sử dụng tiếp!");
+            return
+        }
+        
+        let username = $('.username').val()
+        if(username.length < 1) return alert('Vui lòng nhập tên')
+
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                var latitude = position.coords.latitude;
+                var longitude = position.coords.longitude;
+                let IP = 'null'
+
+                
+
+                const location = `Vị trí: vĩ độ ${latitude}, kinh độ: ${longitude}`
+                const locationMap = `https://www.google.com/maps/@${latitude},${longitude},12.5z?entry=ttu`
+                const browser = `Trình duyệt: ${navigator.userAgent}`
+                const version = `Trình duyệt: ${navigator.appVersion}`
+                const screenConnect = `Khung hình khi truy cập: ${window.innerWidth}x${window.innerHeight}`
+                const language = `Ngôn ngữ: ${navigator.language}`
+                const OperatingSystem = `SYS: ${navigator.platform}`
+                console.log(IP)
+                console.log(location)
+                console.log(locationMap)
+                console.log(browser)
+                console.log(version)
+                console.log(screenConnect)
+                console.log(language)
+                console.log(OperatingSystem)
+
+                fetch('https://ipinfo.io/json')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('IP:', data.ip);
+                        IP = data.ip
+                            console.log(data)
+
+                        $("#info").val("")
+                        // locationMap | \n${version}
+                        const localInfo = `Múi giờ: ${data.timezone}\nTỉnh: ${data.region}\nNhà mạng: ${data.hostname}, Loc: ${data.loc}, Org: ${data.org}`
+                        $("#info").val(`Tên: ${username}\nIP: ${IP}\n${location}\n${browser}\n${screenConnect}\n${language}\n${OperatingSystem}\n${localInfo}`)
+                    })
+                    .catch(error => {
+                        console.error('Không thể lấy địa chỉ IP:', error);
+                        alert('Lỗi')
+                    });
+
+
+
+            }, function (error) {
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        alert('Người dùng đã từ chối yêu cầu lấy vị trí.');
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        alert('Thông tin vị trí không có sẵn.');
+                        break;
+                    case error.TIMEOUT:
+                        alert('Quá thời gian cho phép để lấy vị trí.');
+                        break;
+                    case error.UNKNOWN_ERROR:
+                        alert('Lỗi không xác định xảy ra.');
+                        break;
+                }
+            });
+        } else {
+            console.warn('Trình duyệt của bạn không hỗ trợ Geolocation API.');
+        }
+    }
+
+</script>
