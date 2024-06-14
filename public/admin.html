@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+        integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <title>ADMIN</title>
+</head>
+
+<body>
+    <div class="container">
+        <h3>ADMIN</h3>
+        <hr>
+        <h5>Sửa đổi đường dẫn</h5>
+        <input type="text" class="form-control" value="Đang tải ..." class="mt-2 mb-2" id="valueLink">
+        <button class="btn btn-success mb-3 mt-2" onclick="changeLink()">Lưu</button>
+
+        <h5>Dữ liệu</h5>
+        <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">STT</th>
+                <th scope="col">Thời gian</th>
+                <th scope="col">Tên</th>
+                <th scope="col">IP</th>
+                <th scope="col">Vị trí</th>
+              </tr>
+            </thead>
+            <tbody id="data-table">
+                
+            </tbody>
+          </table>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+</body>
+</html>
+<script>
+    function changeLink(){
+        const linkNew = $('#valueLink').val()
+        $.ajax({
+            url: '/editLink',
+            type: 'POST',
+            contentType: 'application/x-www-form-urlencoded',
+            data: { linkNew },
+            success: function(response) {
+                alert("Thay đổi thành công")
+            },
+            error: function(error) {
+                alert("Thay đổi thất bại")
+                console.error('Error:', error);
+            }
+        });
+    }
+    loadding()
+    function loadding(){
+        $.ajax({
+            url: '/link',
+            type: 'GET',
+            contentType: 'application/x-www-form-urlencoded',
+            success: function(response) {
+                $('#valueLink').val(response.link)
+            },
+            error: function(error) {
+                alert("Tải đường dẫn thất bại")
+                console.error('Error:', error);
+            }
+        });
+
+        $.ajax({
+            url: '/allData',
+            type: 'GET',
+            contentType: 'application/x-www-form-urlencoded',
+            success: function(response) {
+                response = response.data
+                let count = response.length;
+                for (let i = 0; i < response.length; i++) {
+                    console.log(response[i])
+                    $("#data-table").prepend(`<tr>
+                                                <th scope="row">${count}</th>
+                                                <td>${response[i].date}</td>
+                                                <td>${response[i].name}</td>
+                                                <td>${response[i].ip}</td>
+                                                <td><a href="${response[i].locationMap}" target="_blank" rel="noopener noreferrer">Đường dẫn GG Map</a></td>
+                                            </tr>`)
+                    count--
+                }
+            },
+            error: function(error) {
+                alert("Tải đường dẫn thất bại")
+                console.error('Error:', error);
+            }
+        });
+    }
+
+</script>

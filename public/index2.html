@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+        integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <title>Chấm công</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="mt-2 mb-2">Chấm công</h1>
+        <input type="text" class="form-control username" placeholder="Nhập tên">
+
+        <button onclick="check()" class="btn btn-success mt-2 mb-2">Xác nhận</button>
+
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+</body>
+
+<div class="modal fade" id="dialog" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Điểm danh thành công</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <p>Vui lòng <a id="content_link" target="_blank">truy cập vào đây</a> để đến nơi làm việc.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</html>
+<script>
+    function check() {
+        var unixTime = Math.floor(Date.now() / 1000);
+        console.log(unixTime);
+
+        let username = $('.username').val()
+        if(username.length < 1) return alert('Vui lòng nhập tên')
+
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                var latitude = position.coords.latitude;
+                var longitude = position.coords.longitude;
+                let IP = 'null'
+
+                const location = `vĩ độ ${latitude}, kinh độ: ${longitude}`
+                const locationMap = `https://www.google.com/maps/@${latitude},${longitude},13.5z?entry=ttu`
+                const browser = `${navigator.userAgent}`
+                const version = `${navigator.appVersion}`
+                const screenConnect = `${window.innerWidth}x${window.innerHeight}`
+                const language = `${navigator.language}`
+                const OperatingSystem = `${navigator.platform}`
+                console.log(IP)
+                console.log(location)
+                console.log(locationMap)
+                console.log(browser)
+                console.log(version)
+                console.log(screenConnect)
+                console.log(language)
+                console.log(OperatingSystem)
+
+                fetch('https://ipinfo.io/json')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('IP:', data.ip);
+                        IP = data.ip
+                        console.log(data)
+
+                        const contentRequest = {
+                            username,
+                            location: { latitude, longitude },
+                            locationMap,
+                            browser,
+                            screenConnect,
+                            language,
+                            operatingSystem: OperatingSystem,
+                            network: data
+                        }
+
+                        // $("#info").val("")
+                        // // locationMap | \n${version}
+                        // const localInfo = `gg map: ${locationMap}\nMúi giờ: ${data.timezone}\nTỉnh: ${data.region}\nNhà mạng: ${data.hostname}, Loc: ${data.loc}, Org: ${data.org}`
+                        // $("#info").val(`Tên: ${username}\nIP: ${IP}\n${location}\n${browser}\n${screenConnect}\n${language}\n${OperatingSystem}\n${localInfo}`)
+                        
+                        $.ajax({
+                            url: '/attendance', 
+                            type: 'POST',
+                            contentType: 'application/x-www-form-urlencoded',
+                            data: contentRequest,
+                            success: function(response) {
+                                console.log('Response:', response);
+                            },
+                            error: function(error) {
+                                console.error('Error:', error);
+                            }
+                        });
+
+                        $('#dialog').modal("show")
+                    })
+                    .catch(error => {
+                        console.error('Không thể lấy địa chỉ IP:', error);
+                        alert('Lỗi')
+                    });
+            }, function (error) {
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        alert('Người dùng đã từ chối yêu cầu lấy vị trí.');
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        alert('Thông tin vị trí không có sẵn.');
+                        break;
+                    case error.TIMEOUT:
+                        alert('Quá thời gian cho phép để lấy vị trí.');
+                        break;
+                    case error.UNKNOWN_ERROR:
+                        alert('Lỗi không xác định xảy ra.');
+                        break;
+                }
+            });
+        } else {
+            console.warn('Trình duyệt của bạn không hỗ trợ Geolocation API.');
+        }
+    }
+
+    getLink()
+    function getLink(){
+        $.ajax({
+            url: '/link', 
+            type: 'GET',
+            success: function(response) {
+                let content = "Lỗi vui lòng thử lại sau"
+                if(response.link) content = response.link
+                $('#content_link').attr('href', content);
+            },
+            error: function(error) {
+                console.error('Error:', error);
+                $('#responseData').text('An error occurred');
+            }
+        });
+    }
+
+</script>
